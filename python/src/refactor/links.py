@@ -20,19 +20,19 @@ class HtmlParser(ABC):
         self.soup = BeautifulSoup(html, "html.parser")
 
     @abstractmethod
-    def parse(self, **kwargs: Any) -> Any:
+    def parse(self, html: str) -> Any:
         "Parse data"
         pass
 
 
 class HtmlLinksParser(HtmlParser):
-    # TODO: придумать лучший вариант работы с параметрами для parse
-    def parse(self, **kwargs: Any) -> list[tuple[str, date]]:
+    def parse(self, html: str, start_date: date, second_date: date) -> list[tuple[str, date]]:
         """
         Парсит ссылки на бюллетени с одной страницы:
         <a class="accordeon-inner__item-title link xls" href="/upload/reports/oil_xls/oil_xls_20240101_test.xls">link1</a>
         """
-        # TODO: возможно стоит разделить блоки кода на методы
+        # TODO: возможно стоит разделить блоки кода на методы (Single Responsibility Princple),
+        # то есть например: вынести валидацию xls файла (1), вынести парсинг даты (2)
         start_date: date | None = kwargs.get("start_date")
         end_date: date | None = kwargs.get("end_date")
         url: str | None = kwargs.get("url")
@@ -41,6 +41,7 @@ class HtmlLinksParser(HtmlParser):
 
         # Добавил аннотации типов для results
         results: list[tuple[str, datetime._Date]] = []
+        # TODO: возможно стоит вынести части ссылки в атрибуты класса
         links = self.soup.find_all("a", class_="accordeon-inner__item-title link xls")
 
         for link in links:
@@ -49,6 +50,7 @@ class HtmlLinksParser(HtmlParser):
                 continue
 
             # href -> href_without_url_params
+            # TODO: (1) возможно следует вынести в отдельный метод валидацию xls файла
             href_without_url_params = href.split("?")[0]
             if "/upload/reports/oil_xls/oil_xls_" not in href_without_url_params or \
                 not href_without_url_params.endswith(".xls"):
@@ -56,6 +58,7 @@ class HtmlLinksParser(HtmlParser):
 
             try:
                 # Изменил название переменной date -> report_date_str
+                # TODO: (2) возможно следует вынести парсинг даты в отдельный метод
                 report_date_str = href.split("oil_xls_")[1][:8]
                 # file -> report_date
                 report_date = datetime.datetime.strptime(report_date_str, "%Y%m%d").date()
@@ -65,7 +68,8 @@ class HtmlLinksParser(HtmlParser):
                     results.append((parsed_url, report_date))
                 else:
                     print(f"Ссылка {report_date_str} вне диапазона дат")
-            except Exception as e:
+            # Exception -> ValueError
+            except ValueError as e:
                 print(f"Не удалось извлечь дату из ссылки {href_without_url_params}: {e}")
 
         return results
