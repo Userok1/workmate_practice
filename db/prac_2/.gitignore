@@ -1,3 +1,6 @@
 session.vim
 .venv
 __*
+.env
+spimex_trading_results.db
+test.py

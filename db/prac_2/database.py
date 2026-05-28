@@ -1,15 +1,24 @@
-from sqlalchemy import create_engine, func
-from sqlalchemy.orm import sessionmaker, DeclarativeBase, Mapped, mapped_column
+import os
+from sqlalchemy import func
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from datetime import date as DatetimeDate
+from typing import AsyncGenerator
 
-SQLITE_URL = "sqlite+pysqlite:///spimex_trading_results.db"
+POSTGRES_URL = os.getenv("DATABASE_URL")
 
 
-engine = create_engine(
-    SQLITE_URL, connect_args={"check_same_thread": False}
-)
+async def get_async_db_session() -> AsyncGenerator[async_sessionmaker[AsyncSession], None]:
+    engine = create_async_engine(POSTGRES_URL)
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(Base.metadata.create_all)
 
-session_factory = sessionmaker(engine, autoflush=False, expire_on_commit=False)
+    session_factory = async_sessionmaker(engine, expire_on_commit=False, autoflush=False, class_=AsyncSession)
+
+    yield session_factory
+
+    await engine.dispose()
 
 
 class Base(DeclarativeBase):
