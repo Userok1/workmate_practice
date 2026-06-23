@@ -1,5 +1,5 @@
 Сравнение синхронного и асинхронного кода
 Синхронный парсер:
-![Sync parser](sync_parser.png)
+![Sync parser](https://github.com/Userok1/workmate_practice/blob/main/asyncio_practice/prac_2/sync_impl.png)
 Асинхронный парсер:
-![Async parser](async_parser.png)
+![Async parser](https://github.com/Userok1/workmate_practice/blob/main/asyncio_practice/prac_2/async_impl.png)
