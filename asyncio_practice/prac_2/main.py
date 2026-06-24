@@ -1,5 +1,6 @@
 from typing import AsyncGenerator, no_type_check
 import aiohttp
+from aiohttp_retry import RetryClient
 import pdfplumber
 import pandas as pd
 from pdfplumber.page import Page
@@ -286,7 +287,10 @@ async def main() -> None:
     db_engine: AsyncGenerator[async_sessionmaker[AsyncSession]] = get_async_db_session()
     session_factory: async_sessionmaker[AsyncSession] = await anext(db_engine)
     with ProcessPoolExecutor(max_workers=mp.cpu_count()) as executor:
-        async with aiohttp.ClientSession(headers=HEADERS, timeout=aiohttp.ClientTimeout(total=60)) as ac:
+        async with RetryClient(
+            aiohttp.ClientSession(headers=HEADERS, timeout=aiohttp.ClientTimeout(total=60)), max_retries=3
+        ) as ac:
+        # async with aiohttp.ClientSession(headers=HEADERS, timeout=aiohttp.ClientTimeout(total=60)) as ac:
             logger.info("http запрос на страницу биржи...")
 
             url_prefix = "https://spimex.com"
