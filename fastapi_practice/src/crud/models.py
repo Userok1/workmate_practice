@@ -2,8 +2,12 @@ from sqlalchemy import func
 from sqlalchemy.orm import Mapped, mapped_column
 from datetime import date as DatetimeDate
 from typing import Any
+import logging
 
 from src.database import Base
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 class TradeResultsOrm(Base):
@@ -25,6 +29,7 @@ class TradeResultsOrm(Base):
 
     def to_dict(self) -> dict[str, Any]:
         data = {
+            "id": self.id,
             "exchange_product_id": self.exchange_product_id,
             "exchange_product_name": self.exchange_product_name,
             "oil_id": self.oil_id,
@@ -34,8 +39,8 @@ class TradeResultsOrm(Base):
             "volume": self.volume,
             "total": self.total,
             "count": self.count,
-            "date": self.date.isoformat(),
-            "created_on": self.created_on.isoformat(),
+            "date": self.date.isoformat() if self.date else None,
+            "created_on": self.created_on.isoformat() if self.created_on else None,
             "updated_on": self.updated_on.isoformat() if self.updated_on else None,
         }
         return data

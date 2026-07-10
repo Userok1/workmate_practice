@@ -11,7 +11,7 @@ from src.crud.schemas import (
     FiltersSchema,
     TradingResultsReturnSchema,
 )
-from src.crud.service import get_trading_dates, get_results
+from src.crud.service import read_trading_dates, read_results
 from src.crud.dependencies import get_redis_client
 
 router = APIRouter()
@@ -23,9 +23,9 @@ async def get_last_trading_dates(
         async_sessionmaker[AsyncSession], Depends(get_async_db_session)
     ],
     redis_client: Annotated[Redis, Depends(get_redis_client)],
-    days: int | None = None,
+    days: Annotated[int | None, Query(gt=0)] = None,
 ):
-    dates: list[date] | None = await get_trading_dates(
+    dates: list[date] | None = await read_trading_dates(
         days, session_factory, redis_client
     )
     if not dates:
@@ -48,7 +48,7 @@ async def get_dynamics(
     ],
     redis_client: Annotated[Redis, Depends(get_redis_client)],
 ):
-    trade_results: list[TradeResultsOrm] = await get_results(
+    trade_results: list[TradeResultsOrm] | None = await read_results(
         filters,
         session_factory,
         redis_client,
@@ -76,7 +76,7 @@ async def get_trading_results(
     ],
     redis_client: Annotated[Redis, Depends(get_redis_client)],
 ):
-    trade_results: list[TradeResultsOrm] = await get_results(
+    trade_results: list[TradeResultsOrm] | None = await read_results(
         filters, session_factory, redis_client
     )
     if not trade_results:

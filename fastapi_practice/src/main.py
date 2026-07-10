@@ -1,9 +1,8 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 import uvicorn
 from contextlib import asynccontextmanager
 from redis.exceptions import ConnectionError
 import logging
-import time
 
 from src.crud.router import router
 from src.crud.utils import redis_client
@@ -24,7 +23,7 @@ async def lifespan(app: FastAPI):
 
     yield
 
-    # await redis_client.flushall()
+    await redis_client.flushall()
     await redis_client.aclose()
 
 
@@ -32,13 +31,13 @@ app = FastAPI(lifespan=lifespan)
 app.include_router(router)
 
 
-@app.middleware("http")
-async def add_process_time_header(request: Request, call_next):
-    start_time = time.time()
-    response = await call_next(request)
-    process_time = time.time() - start_time
-    response.headers["X-Process-Time"] = str(process_time)
-    return response
+# @app.middleware("http")
+# async def add_process_time_header(request: Request, call_next):
+#     start_time = time.time()
+#     response = await call_next(request)
+#     process_time = time.time() - start_time
+#     response.headers["X-Process-Time"] = str(process_time)
+#     return response
 
 
 @app.get("/")

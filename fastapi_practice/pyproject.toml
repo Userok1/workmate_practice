@@ -3,7 +3,7 @@ name = "fastapi-practice"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-pythonpath="/home/user/code/wm_practice/workmate_practice/fastapi_practice"
+pythonpath="."
 requires-python = ">=3.14"
 dependencies = [
     "asyncpg>=0.31.0",
